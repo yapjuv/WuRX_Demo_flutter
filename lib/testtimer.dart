@@ -11,42 +11,32 @@ class TestTimerScreen extends StatefulWidget {
 class _testtimerscreen extends State<TestTimerScreen> {
   int minuto = 30;
   int segundo = 00;
-  int mills = 000;
-  //int sectest = 10000;
-
   Timer? _timer;
 
-  /*void testTimer() {
-    _timer = Timer.periodic(Duration(milliseconds: 1), (timer) {
-      setState(() {
-        sectest--;
-      });
-    });
-  }*/
-
   void _startTimer() {
-    _timer = Timer.periodic(Duration(milliseconds: 1), (timer) {
+    if (_timer != null) {
+      _timer?.cancel();
+    }
+    if (minuto > 0) {
+      segundo = minuto * 60;
+    }
+    if (segundo > 60) {
+      minuto = (segundo / 60).floor();
+      segundo = segundo - (minuto * 60);
+    }
+
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
       setState(() {
-        if (mills == 0 && segundo == 0 && minuto == 0) {
-          _stopTimer();
+        if (segundo > 0) {
+          segundo--;
         } else {
-          if (mills == 0) {
-            if (segundo <= 0) {
-              if (minuto <= 0) {
-                _stopTimer();
-              } else {
-                minuto--;
-              }
-              segundo = 59;
-            } else {
-              segundo--;
-            }
-            mills = 999;
+          if (minuto > 0) {
+            segundo = 59;
+            minuto--;
           } else {
-            mills--;
+            _timer?.cancel();
           }
         }
-        print('$minuto:$segundo.$mills');
       });
     });
   }
@@ -55,7 +45,6 @@ class _testtimerscreen extends State<TestTimerScreen> {
     setState(() {
       minuto = 30;
       segundo = 00;
-      mills = 000;
       _timer?.cancel();
     });
   }
@@ -161,7 +150,8 @@ class _testtimerscreen extends State<TestTimerScreen> {
                       )), //background of timer
                   Positioned(
                     top: 280,
-                    child: Text('$minuto:$segundo.$mills',
+                    child: Text(
+                        '${minuto.toString().padLeft(2, '0')}:${segundo.toString().padLeft(2, '0')}',
                         style: TextStyle(
                             color: Colors.greenAccent.shade700,
                             fontFamily: 'Digital-7',
@@ -172,7 +162,6 @@ class _testtimerscreen extends State<TestTimerScreen> {
                       child: GestureDetector(
                         onTap: () {
                           print('Start Timer');
-                          //testTimer();
                           _startTimer();
                         },
                         child: Image(

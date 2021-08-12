@@ -1,51 +1,97 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'constants.dart';
 import 'dart:math';
+import 'dart:async';
 
-String stresslvl = 'No BPM detected';
+class BLEServices extends StatefulWidget {
+  const BLEServices({Key? key}) : super(key: key);
 
-class ServicesScreen extends StatelessWidget {
-  final temp = (Random().nextDouble() * 100).toStringAsFixed(2);
-  final bpm = nextBPM(
+  @override
+  _BLEServicesState createState() => _BLEServicesState();
+}
+
+class _BLEServicesState extends State<BLEServices> {
+  int bpm = nextBPM(
       min: 60, max: 200); //minimum heart rate 60, maximum heart rate 200
-  //double temp = 0;
-  bool alwaysOn = true;
+  String temp = (Random().nextDouble() * 100).toStringAsFixed(2);
+  String? stresslvl;
+  bool alwaysHeartOn = false;
+  bool alwaysStressOn = false;
+  int x = 0;
+
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+
+    randomTimer();
+  }
+
+  void randomTimer() {
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      setState(() {
+        int half = Random().nextInt(9);
+        int num = Random().nextInt(5);
+        if (half < 5) {
+          bpm -= num;
+        } else {
+          bpm += num;
+        }
+        print(bpm);
+
+        if (alwaysHeartOn) {
+          createHeartRatePopup(context);
+          x++;
+        }
+
+        if (alwaysStressOn) {
+          if (60 < bpm && 101 > bpm) {
+            stresslvl = 'Calm';
+          } else if (100 < bpm && 131 > bpm) {
+            stresslvl = 'Stressed';
+          } else if (130 < bpm && 200 > bpm) {
+            stresslvl = 'Very Stressed';
+          }
+          createStressPopup(context);
+          x++;
+        }
+      });
+    });
+  }
 
   createHeartRatePopup(BuildContext context) {
     return showDialog(
+        barrierColor: Colors.transparent,
+        barrierDismissible: false,
         context: context,
         builder: (context) {
           return Dialog(
+            elevation: 0,
             backgroundColor: Colors.transparent,
             child: Stack(
               alignment: Alignment.center,
               children: <Widget>[
                 Container(
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(30),
-                        gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.brown.shade300,
-                              Colors.red.shade200,
-                              Colors.pink.shade300
-                            ])),
-                    child: GestureDetector(
-                      onTap: () {
-                        final bpm = nextBPM(
-                            min: 60,
-                            max:
-                                200); //minimum heart rate 60, maximum heart rate 200
-                      },
-                      child: Image(
-                        image: AssetImage(
-                            'images/kisspng-heart-rate-computer-icons-medicine-hospital-clip-a-heart-rate-icon-5b486825675d32.8314274315314719094234.png'),
-                        alignment: Alignment.center,
-                        color: Color.fromRGBO(0, 0, 0, 190),
-                      ),
-                    )),
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(30),
+                      gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.brown.shade300,
+                            Colors.red.shade200,
+                            Colors.pink.shade300
+                          ])),
+                  child: Image(
+                    image: AssetImage(
+                        'images/kisspng-heart-rate-computer-icons-medicine-hospital-clip-a-heart-rate-icon-5b486825675d32.8314274315314719094234.png'),
+                    alignment: Alignment.center,
+                    color: Color.fromRGBO(0, 0, 0, 190),
+                  ),
+                ),
                 Text(
                   '$bpm BPM',
                   style: TextStyle(color: Colors.white, fontSize: 50),
@@ -55,7 +101,11 @@ class ServicesScreen extends StatelessWidget {
                   top: 10,
                   child: GestureDetector(
                     onTap: () {
-                      Navigator.pop(context);
+                      alwaysHeartOn = false;
+                      while (x > 0) {
+                        Navigator.pop(context);
+                        x--;
+                      }
                     },
                     child: Align(
                       alignment: Alignment.topRight,
@@ -75,9 +125,11 @@ class ServicesScreen extends StatelessWidget {
 
   createTempPopup(BuildContext context) {
     return showDialog(
+        barrierColor: Colors.transparent,
         context: context,
         builder: (context) {
           return Dialog(
+            elevation: 0,
             backgroundColor: Colors.transparent,
             child: Stack(
               alignment: Alignment.center,
@@ -129,9 +181,11 @@ class ServicesScreen extends StatelessWidget {
 
   createStressPopup(BuildContext context) {
     return showDialog(
+        barrierColor: Colors.transparent,
         context: context,
         builder: (context) {
           return Dialog(
+            elevation: 0,
             backgroundColor: Colors.transparent,
             child: Stack(
               alignment: Alignment.center,
@@ -174,7 +228,11 @@ class ServicesScreen extends StatelessWidget {
                   top: 10,
                   child: GestureDetector(
                     onTap: () {
-                      Navigator.pop(context);
+                      alwaysStressOn = false;
+                      while (x > 0) {
+                        Navigator.pop(context);
+                        x--;
+                      }
                     },
                     child: Align(
                       alignment: Alignment.topRight,
@@ -292,7 +350,8 @@ class ServicesScreen extends StatelessWidget {
                             GestureDetector(
                               onTap: () {
                                 print('Open Heart Rate Pop up');
-                                createHeartRatePopup(context);
+                                //createHeartRatePopup(context);
+                                alwaysHeartOn = true;
                               },
                               child: Image(
                                 image: AssetImage('images/Heart Rate Icon.png'),
@@ -343,14 +402,8 @@ class ServicesScreen extends StatelessWidget {
                         GestureDetector(
                           onTap: () {
                             print('Open Stress Icon');
-                            if (60 < bpm && 101 > bpm) {
-                              stresslvl = 'Calm';
-                            } else if (100 < bpm && 131 > bpm) {
-                              stresslvl = 'Stressed';
-                            } else if (130 < bpm && 200 > bpm) {
-                              stresslvl = 'Very Stressed';
-                            }
-                            createStressPopup(context);
+                            //createStressPopup(context);
+                            alwaysStressOn = true;
                           },
                           child: Image(
                             image: AssetImage('images/Stress Icon.png'),

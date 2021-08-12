@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:wurx_demo/servicesscreen.dart';
+import 'package:wurx_demo/services.dart';
 import 'package:wurx_demo/testtimer.dart';
 
 class MainmenuiconslightmodeWidget extends StatelessWidget {
@@ -68,10 +68,8 @@ class MainmenuiconslightmodeWidget extends StatelessWidget {
                 onPressed: () {
                   print('Proceed to Services Screen');
                   Navigator.pop(context);
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => ServicesScreen()));
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => BLEServices()));
                 },
                 elevation: 5.0,
                 child: Text(
